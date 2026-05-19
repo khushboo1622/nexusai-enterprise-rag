@@ -1,0 +1,67 @@
+# =========================
+# API FRAMEWORK
+# =========================
+
+fastapi
+uvicorn
+python-dotenv
+
+transformers
+torch
+
+# =========================
+# AUTH
+# =========================
+python-jose[cryptography]
+passlib[bcrypt]
+
+# =========================
+# LLAMAINDEX CORE
+# =========================
+llama-index
+llama-index-embeddings-huggingface
+llama-index-vector-stores-qdrant
+llama-index-llms-gemini
+llama-index-llms-groq
+ 
+
+# =========================
+# VECTOR DB
+# =========================
+qdrant-client
+
+# =========================
+# MONGODB
+# =========================
+pymongo[srv]
+
+# =========================
+# EMBEDDINGS
+# =========================
+sentence-transformers
+
+# =========================
+# GUARDRAILS
+# =========================
+presidio-analyzer
+presidio-anonymizer
+
+# =========================
+# EVALUATION
+# =========================
+ragas
+
+# =========================
+# UTILITIES
+# =========================
+pydantic
+pydantic-settings
+
+# Observability
+langsmith
+opentelemetry-sdk
+
+streamlit
+
+
+llama-index-postprocessor-flag-embedding-reranker
