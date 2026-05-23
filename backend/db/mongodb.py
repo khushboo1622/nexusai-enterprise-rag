@@ -6,7 +6,7 @@ All other modules import `db` from here — one connection, reused everywhere.
 
 Collections:
   - users         : stores user accounts (email, hashed password, role)
-  - chat_logs     : silently stores all queries for Ragas eval (Phase 2)
+  - chat_logs     : anonymous feedback + guardrail block reasons only (no PII)
 """
 
 import logging

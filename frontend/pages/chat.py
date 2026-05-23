@@ -398,7 +398,9 @@ if not st.session_state.get("messages"):
     <div class="welcome-box">
         You have access to <strong style="color:#9D97F5;">
         {access_map.get(user_role, "company documents")}</strong>.
-        Your conversation is private and cleared when you sign out.
+        We do not store your questions, answers, or identity.
+        Only anonymous feedback (👍/👎) and guardrail block reasons are logged.
+        Chat history exists only in this session until you sign out.
     </div>
     """, unsafe_allow_html=True)
 

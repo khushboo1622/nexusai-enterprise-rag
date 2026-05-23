@@ -42,13 +42,15 @@ settings = get_settings()
 def fetch_logs(limit: int = 50) -> list[dict]:
     """
     Pull recent chat logs from MongoDB.
-    Only includes non-blocked queries that have sources.
+
+    Note: production chat_logs no longer store question/answer (privacy).
+    Ragas eval requires a separate eval dataset or legacy logs with full fields.
     """
     logs = get_chat_logs_collection()
     cursor = logs.find(
         {
-            "blocked": {"$ne": True},          # skip guardrail-blocked queries
-            "sources": {"$exists": True, "$ne": []},  # must have retrieved sources
+            "blocked": {"$ne": True},
+            "question": {"$exists": True, "$ne": ""},
             "answer": {"$exists": True, "$ne": ""},
         },
         sort=[("timestamp", -1)],

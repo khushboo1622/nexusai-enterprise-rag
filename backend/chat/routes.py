@@ -407,8 +407,7 @@ async def submit_feedback(
     current_user: TokenData = Depends(get_current_user),
 ):
     """
-    Store user feedback on a specific answer.
-    Used for answer quality monitoring and future Ragas evaluation.
+    Store anonymous thumbs up/down on a telemetry row (no PII).
     feedback must be "positive" or "negative".
     """
     from bson import ObjectId
@@ -422,10 +421,7 @@ async def submit_feedback(
     try:
         logs = get_chat_logs_collection()
         result = logs.update_one(
-            {
-                "_id": ObjectId(log_id),
-                "user_id": current_user.user_id,  # users can only rate their own queries
-            },
+            {"_id": ObjectId(log_id)},
             {
                 "$set": {
                     "feedback": feedback,
@@ -440,9 +436,7 @@ async def submit_feedback(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Log entry not found.",
             )
-        logger.info(
-            f"[FEEDBACK] {feedback} from {current_user.email} on log {log_id}"
-        )
+        logger.info(f"[FEEDBACK] {feedback} on log {log_id}")
         return {"message": "Feedback recorded. Thank you!"}
     except Exception as e:
         logger.error(f"Feedback update failed: {e}")
@@ -461,24 +455,42 @@ def _log_query(
     block_reason: str = None,
 ) -> str | None:
     """
-    Silently log every query to MongoDB.
-    Returns the inserted log_id (str) so frontend can reference it for feedback.
-    Errors are swallowed — logging must never break the main flow.
+    Minimal anonymous telemetry — no PII.
+
+    Creates a record only when:
+      - the request was blocked by guardrails (stores block_reason only), or
+      - there was a non-empty assistant response (stores feedback slot only).
+
+    Does NOT persist: employee id, name, email, question, answer, or sources.
+    Returns log_id for thumbs up/down feedback when a row is created.
     """
+    _ = user, question, sources  # not persisted (call-site compatibility only)
+
+    if blocked:
+        if not block_reason:
+            return None
+    elif not (answer and str(answer).strip()):
+        return None
+
     try:
         logs = get_chat_logs_collection()
-        result = logs.insert_one({
-            "user_id":      user.user_id,
-            "email":        user.email,
-            "role":         user.role,
-            "question":     question,
-            "answer":       answer,
-            "sources":      [s.model_dump() for s in (sources or [])],
-            "blocked":      blocked,
-            "block_reason": block_reason,
-            "feedback":     None,
-            "timestamp":    datetime.now(timezone.utc),
-        })
+        doc = {
+            "blocked": blocked,
+            "feedback": None,
+            "timestamp": datetime.now(timezone.utc),
+        }
+        if blocked:
+            doc["block_reason"] = block_reason
+
+        # Personal / conversation content — intentionally not stored
+        # "user_id":      user.user_id,
+        # "email":        user.email,
+        # "role":         user.role,
+        # "question":     question,
+        # "answer":       answer,
+        # "sources":      [s.model_dump() for s in (sources or [])],
+
+        result = logs.insert_one(doc)
         return str(result.inserted_id)
     except Exception as e:
         logger.warning(f"Failed to log query to MongoDB: {e}")
