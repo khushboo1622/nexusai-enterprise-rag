@@ -213,7 +213,7 @@ Authorization: Bearer <access_token>
 
 ---
 
-## RAG Pipeline (v3) — Design Notes
+## RAG Pipeline — Design Notes
 
 - **Intent types**: `hr_read`, `hr_write`, `summary`, `entity`, `default`
 - **Query rewrite**: LLM condenses conversational questions to search keywords (skipped for `summary`)
